@@ -2,8 +2,12 @@ import { useState } from 'react'
 import './App.css'
 import Tiptap from './editor'
 import Map from './map'
-import Location from './domain'
 
+interface Location {
+  text: string
+  lat: Number
+  lon: Number
+}
 
 // Utility to extract locations
 const extractLocationText = (text: string): string[] => {
@@ -20,11 +24,9 @@ const extractLocationText = (text: string): string[] => {
 
 function calcLocations(text: string) {
   const text_for_locations = extractLocationText(text);
-  const locations = text_for_locations.map((location_text): Location => {
+  return text_for_locations.map((location_text): Location => {
     return { text: location_text, lat: 40.7128, lon: -74.0060 }
   });
-  console.log(locations);
-  return locations;
 }
 
 function App() {
@@ -51,4 +53,4 @@ function App() {
   )
 }
 
-export default { App }
+export default App
