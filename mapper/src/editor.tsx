@@ -9,18 +9,6 @@ import { Node } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 
-// Utility to extract locations
-const extractLocations = (text) => {
-  const regex = /@([^@]+)@/g;
-  let match;
-  const locations = [];
-
-  while ((match = regex.exec(text)) !== null) {
-    locations.push(match[1]);
-  }
-
-  return locations;
-};
 
 const HighlightedLocations = Extension.create({
   name: 'highlightedLocations',
@@ -63,18 +51,17 @@ const extensions = [StarterKit, HighlightedLocations]
 const content = '<p>Hello World!</p>'
 
 type Props = {
-  locations: string[],
-  setLocations: React.Dispatch<SetStateAction<string[]>>
+  onTextChange: (text: string) => void;
 };
 
-function Tiptap({ locations, setLocations }: Props) {
+function Tiptap({ onTextChange }: Props) {
 
   const editor = useEditor({
     extensions: extensions,
     content: content,
     onUpdate: ({ editor }) => {
       const text = editor.getText();
-      setLocations(extractLocations(text))
+      onTextChange(text);
     },
   })
   return (
