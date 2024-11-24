@@ -61,6 +61,7 @@ function Tiptap({ onTextChange }: Props) {
     content: content,
     onUpdate: ({ editor }) => {
       const text = editor.getText();
+      console.log(text);
       onTextChange(text);
     },
   })
