@@ -4,4 +4,13 @@ interface Location {
   lon: number
 }
 
-export default Location
+interface Pin {
+  location: Location,
+  datetime_utc: Date,
+}
+
+interface ItineraryChunk {
+  pins: Array<Pin>
+}
+
+export type { Location, Pin, ItineraryChunk }

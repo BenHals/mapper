@@ -1,51 +1,57 @@
-import React, { useRef, useEffect } from 'react';
-import maplibregl from 'maplibre-gl';
+import { useRef, useEffect } from 'react';
+import maplibregl, { Marker, Popup } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './map.css';
-import Location from './domain';
+import { Location, Pin, ItineraryChunk } from './domain';
 
 type Props = {
-  locations: Location[]
+  itinerary_chunks: ItineraryChunk[]
 }
 
-function Map({ locations }: Props) {
-  const mapContainer = useRef(null);
-  const map = useRef(null);
-  const markers = useRef([]);
+function Map({ itinerary_chunks: itinerary_chunks }: Props) {
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  const markers = useRef<Array<Marker>>([]);
+
+  const chunkColors: string[] = ["#FF0000", "#00FF00", "#0000FF"];
 
   useEffect(() => {
     if (map.current) return;
 
     map.current = new maplibregl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current!,
       center: [139.753, 35.6833],
       zoom: 14,
       style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json'
     });
-  });
+  }, []);
 
   useEffect(() => {
     markers.current.forEach((marker) => { marker.remove() });
     markers.current = [];
 
-    locations.forEach((location) => {
-      const marker = new maplibregl.Marker()
-        .setLngLat([location.lat, location.lon])
-        .addTo(map.current);
+    itinerary_chunks.forEach((i_chunk, idx) => {
+      i_chunk.pins.map((pin) => {
+        const marker = new maplibregl.Marker({ "color": chunkColors[idx % chunkColors.length] })
+          .setLngLat([pin.location.lat, pin.location.lon])
+          .setPopup(new Popup().setText(`I Chunk ${idx}`))
+          .addTo(map.current!);
 
-      markers.current.push(marker);
+        markers.current.push(marker);
+      });
     });
 
-    if (locations.length > 0) {
-      const avg_lat = locations.reduce((acc, v) => acc + v.lat, 0) / locations.length;
-      const avg_lon = locations.reduce((acc, v) => acc + v.lon, 0) / locations.length;
+    if (markers.current.length > 0) {
+      const avg_lat = markers.current.reduce((acc, v) => acc + v.getLngLat().lat, 0) / markers.current.length;
+      const avg_lon = markers.current.reduce((acc, v) => acc + v.getLngLat().lng, 0) / markers.current.length;
+      console.log(avg_lat, avg_lon);
 
-      map.current.flyTo({
-        center: [avg_lat, avg_lon],
-        speed: 0.2
+      map.current!.flyTo({
+        center: [avg_lon, avg_lat],
+        speed: 0.6
       });
     }
-  }, [locations]);
+  }, [itinerary_chunks]);
 
 
 
@@ -56,4 +62,4 @@ function Map({ locations }: Props) {
   )
 }
 
-export default Map
+export { Map }

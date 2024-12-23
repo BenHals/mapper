@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
 import Tiptap from './editor'
-import Map from './map'
-import Location from './domain'
+import { Map as MapComponent } from './map'
+import { ItineraryChunk, Location, Pin } from './domain'
 import { GeocodingApi, Configuration } from '@stadiamaps/api';
 
 // Utility to extract locations
@@ -18,21 +18,56 @@ const extractLocationText = (text: string): string[] => {
   return locations;
 };
 
-async function calcLocations(text: string, api: GeocodingApi) {
-  const text_for_locations = extractLocationText(text);
-  console.log(text_for_locations);
-  return await Promise.all(text_for_locations.map(async (location_text): Promise<Location> => {
-    const res = await api.search({ text: location_text });
-    const coord = res.features[0].geometry.coordinates;
-    console.error(res);
-    return { text: location_text, lat: coord[0], lon: coord[1] }
+// Utility to extract ItineraryChunks
+const extractItineraryChunkText = (text: string): string[] => {
+  const regex = /~([^~]+)~/g;
+  let match;
+  const locations = [];
+
+  while ((match = regex.exec(text)) !== null) {
+    locations.push(match[1]);
+  }
+
+  if (locations.length == 0) {
+    locations.push(text)
+  }
+
+  return locations;
+};
+
+async function calcLocations(text: string, api: GeocodingApi, locationCache: Map<string, Location>) {
+  let itin_chunk_texts = extractItineraryChunkText(text);
+  console.log(itin_chunk_texts);
+  console.warn(locationCache);
+  return await Promise.all(itin_chunk_texts.map(async (chunk_text: string): Promise<ItineraryChunk> => {
+    const chunk_pins = await Promise.all(extractLocationText(chunk_text).map(async (location_text: string) => {
+
+      let location: Location;
+      if (locationCache.has(location_text)) {
+        location = locationCache.get(location_text)!;
+      } else {
+        const res = await api.search({ text: location_text });
+        console.warn(`Querying api for ${location_text}!`);
+        const coord = res.features[0].geometry.coordinates;
+        location = { text: location_text, lat: coord[0], lon: coord[1] }
+        locationCache.set(location_text, location);
+        console.log(locationCache);
+        console.log(locationCache.size);
+        console.error(locationCache);
+      }
+
+      return { location: location, datetime_utc: new Date() } as Pin
+    }));
+    return { pins: chunk_pins } as ItineraryChunk
   }));
 }
 
 function App() {
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [itinerary_chunks, setItineraryChunks] = useState<ItineraryChunk[]>([]);
 
-  const f = (text: string) => { calcLocations(text, api).then((results) => { setLocations(results) }) };
+  let locationCache = useRef<Map<string, Location>>(new Map<string, Location>());
+
+  const f = (text: string) => { calcLocations(text, api, locationCache.current).then((results) => { setItineraryChunks(results) }) };
 
   const api = new GeocodingApi();
 
@@ -43,14 +78,7 @@ function App() {
           <Tiptap onTextChange={f} />
         </div>
         <div className='w-50% h-full block bg-black'>
-          <div>
-            <ul>
-              {locations.map((location, index) => (
-                <li key={index}>{location.text}</li>
-              ))}
-            </ul>
-          </div>
-          <Map locations={locations} />
+          <MapComponent itinerary_chunks={itinerary_chunks} />
         </div>
       </div>
     </>
