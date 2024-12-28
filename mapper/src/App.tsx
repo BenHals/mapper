@@ -61,6 +61,22 @@ async function getRoute(pin: Pin, prev_pin: Pin, api: RoutingApi): Promise<Route
 
 }
 
+async function textLocationSearch(text: string): Promise<Response> {
+  const headers = new Headers();
+  //headers.set('Content-Type', 'application/json');
+  //headers.set('Accept', 'application/json');
+  const uri = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${text}`
+  console.log(uri);
+  const request: RequestInfo = new Request(
+    uri,
+    {
+      method: "GET",
+      headers: headers
+    }
+  );
+  return fetch(request)
+}
+
 async function calcLocations(text: string, api: GeocodingApi, locationCache: Map<string, Location>, routeCache: Map<string, string>) {
   let itin_chunk_texts = extractItineraryChunkText(text);
   console.log(itin_chunk_texts);
@@ -71,9 +87,12 @@ async function calcLocations(text: string, api: GeocodingApi, locationCache: Map
       if (locationCache.has(location_text)) {
         location = locationCache.get(location_text)!;
       } else {
-        const res = await api.search({ text: location_text });
+        //const res = await api.search({ text: location_text });
+        const res = await textLocationSearch(location_text);
+        const res_json = await res.json();
         console.warn(`Querying api for ${location_text}!`);
-        const coord = res.features[0].geometry.coordinates;
+        const coord = [res_json[0]['lon'], res_json[0]['lat']];
+        //const coord = res.features[0].geometry.coordinates;
         location = { text: location_text, lat: coord[1], lon: coord[0] }
         locationCache.set(location_text, location);
         console.log(locationCache);
