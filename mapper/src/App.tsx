@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
 import Tiptap from './editor'
 import { Map as MapComponent } from './map'
 import { ItineraryChunk, Location, Pin, Route } from './domain'
-import { GeocodingApi, RoutingApi, Configuration, RoutingResponseWaypointTypeEnum, CostingModel, Route200Response, RouteResponse } from '@stadiamaps/api';
+import { GeocodingApi, RoutingApi, RoutingResponseWaypointTypeEnum, CostingModel, RouteResponse } from '@stadiamaps/api';
 import polyline from '@mapbox/polyline'
 // Utility to extract locations
 const extractLocationText = (text: string): string[] => {

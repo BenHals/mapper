@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import maplibregl, { Marker, Popup, SourceSpecification, AddLayerObject } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './map.css';
-import { Location, Pin, ItineraryChunk, Route } from './domain';
+import { ItineraryChunk } from './domain';
 
 
 interface RoutePainter {

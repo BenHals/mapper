@@ -1,11 +1,9 @@
 import './editor.css'
 
-import { Editor, Extension } from "@tiptap/core"
-import { EditorProvider, FloatingMenu, BubbleMenu, useEditor, EditorContent } from "@tiptap/react"
+import { Extension } from "@tiptap/core"
+import { useEditor, EditorContent } from "@tiptap/react"
 import { Plugin } from "@tiptap/pm/state"
 import StarterKit from "@tiptap/starter-kit"
-import { SetStateAction, useState } from 'react'
-import { Node } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 
@@ -27,13 +25,13 @@ const HighlightedLocations = Extension.create({
       new Plugin({
         props: {
           decorations: ({ doc }) => {
-            const decorations = [];
+            const decorations: any[] = [];
             const regex = /@([^@]+)@/g;
 
             doc.descendants((node, pos) => {
               if (node.isText) {
                 let match;
-                while ((match = regex.exec(node.text)) !== null) {
+                while (node.text !== undefined && (match = regex.exec(node.text)) !== null) {
                   const start = pos + match.index;
                   const end = start + match[0].length;
 
