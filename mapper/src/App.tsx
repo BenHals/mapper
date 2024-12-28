@@ -3,7 +3,7 @@ import './App.css'
 import Tiptap from './editor'
 import { Map as MapComponent } from './map'
 import { ItineraryChunk, Location, Pin, Route } from './domain'
-import { GeocodingApi, RoutingApi, RoutingResponseWaypointTypeEnum, CostingModel, RouteResponse } from '@stadiamaps/api';
+import { RoutingApi, RoutingResponseWaypointTypeEnum, CostingModel, RouteResponse } from '@stadiamaps/api';
 import polyline from '@mapbox/polyline'
 // Utility to extract locations
 const extractLocationText = (text: string): string[] => {
@@ -77,7 +77,7 @@ async function textLocationSearch(text: string): Promise<Response> {
   return fetch(request)
 }
 
-async function calcLocations(text: string, api: GeocodingApi, locationCache: Map<string, Location>, routeCache: Map<string, string>) {
+async function calcLocations(text: string, locationCache: Map<string, Location>, routeCache: Map<string, string>) {
   let itin_chunk_texts = extractItineraryChunkText(text);
   console.log(itin_chunk_texts);
   console.warn(locationCache);
@@ -136,9 +136,7 @@ function App() {
   let locationCache = useRef<Map<string, Location>>(new Map<string, Location>());
   let routeCache = useRef<Map<string, string>>(new Map<string, string>());
 
-  const f = (text: string) => { calcLocations(text, api, locationCache.current, routeCache.current).then((results) => { setItineraryChunks(results) }) };
-
-  const api = new GeocodingApi();
+  const f = (text: string) => { calcLocations(text, locationCache.current, routeCache.current).then((results) => { setItineraryChunks(results) }) };
 
   return (
     <>
