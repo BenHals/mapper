@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import './map.css';
 import { Location, Pin, ItineraryChunk, Route } from './domain';
 
+
 interface RoutePainter {
   sourceId: string,
   layerId: string,

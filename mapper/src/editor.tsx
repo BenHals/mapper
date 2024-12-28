@@ -9,6 +9,15 @@ import { Node } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 
+function debounce<T extends (...args: any[]) => any>(delay: number): (func: T, ...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout>;
+  return function(func: T, ...args: any[]) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+}
 
 const HighlightedLocations = Extension.create({
   name: 'highlightedLocations',
@@ -58,17 +67,29 @@ type Props = {
   onTextChange: (text: string) => void;
 };
 
+const debouncer = debounce(2000);
+
 function Tiptap({ onTextChange }: Props) {
 
   const editor = useEditor({
     extensions: extensions,
-    content: JSON.parse(initialContent || window.localStorage.getItem('editor-content') || initialContent),
+    content: JSON.parse(window.localStorage.getItem('editor-content') || initialContent),
     onUpdate: ({ editor }) => {
-      const jsonContent = JSON.stringify(editor.getJSON());
-      console.log(jsonContent);
-      window.localStorage.setItem('editor-content', jsonContent)
+      debouncer(
+        (editor) => {
+          const jsonContent = JSON.stringify(editor.getJSON());
+          console.log(jsonContent);
+          window.localStorage.setItem('editor-content', jsonContent)
+          const text = editor.getText();
+          console.log(text);
+          onTextChange(text);
+        },
+        editor,
+      );
+    },
+    onCreate: ({ editor }) => {
       const text = editor.getText();
-      console.log(text);
+      console.log("OnCreate", text);
       onTextChange(text);
     },
   })
