@@ -48,8 +48,12 @@ const HighlightedLocations = Extension.create({
 
 const extensions = [StarterKit, HighlightedLocations]
 
-const content = '<p>Hello World!</p>'
-
+const initialContent = `
+{"type":"doc","content":[
+  {"type":"paragraph","content":[{"type":"text","text":"Hello Traveller!"}]},
+  {"type":"paragraph","content":[{"type":"text","text":"Use 'at' symbols surrounding a location to set a marker, e.g., @London@, and tildes surrounding a set of markers to specify an route, e.g., one day of your trip!"}]}
+]}
+`
 type Props = {
   onTextChange: (text: string) => void;
 };
@@ -58,8 +62,11 @@ function Tiptap({ onTextChange }: Props) {
 
   const editor = useEditor({
     extensions: extensions,
-    content: content,
+    content: JSON.parse(initialContent || window.localStorage.getItem('editor-content') || initialContent),
     onUpdate: ({ editor }) => {
+      const jsonContent = JSON.stringify(editor.getJSON());
+      console.log(jsonContent);
+      window.localStorage.setItem('editor-content', jsonContent)
       const text = editor.getText();
       console.log(text);
       onTextChange(text);

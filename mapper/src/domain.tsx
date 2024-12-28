@@ -9,8 +9,16 @@ interface Pin {
   datetime_utc: Date,
 }
 
-interface ItineraryChunk {
-  pins: Array<Pin>
+interface Route {
+  start_pin_idx: Number,
+  end_pin_idx: Number,
+  route: string
+
 }
 
-export type { Location, Pin, ItineraryChunk }
+interface ItineraryChunk {
+  pins: Array<Pin>,
+  routes: Array<Route>,
+}
+
+export type { Location, Pin, ItineraryChunk, Route }
